@@ -1,6 +1,8 @@
 const mongoose = require('mongoose')
 const bcrypt =require('bcrypt')
-const saltRounds = 10;
+const saltRounds = 10
+const jwt = require('jsonwebtoken')
+
 const userSchema = mongoose.Schema({
   name: {
     type: String,
@@ -49,6 +51,27 @@ userSchema.pre('save', function(next) {
     next()
 }
 });
+
+userSchema.methods.comparePassword = function(plainPassword, callback) {
+  //plainpassword 1234567   vs   hasedpassword in db
+  //to compare, plainpassword has to be hased too and then compare two passwords
+  bcrypt.compare(plainPassword, this.password, function(err, isMatched) {
+    if(err) return callback(err),
+    callback(null, isMatched)
+  })
+}
+
+userSchema.methods.generateToken = function(callback)  {
+  //generate tokesn using jsonwebtoken
+  var user = this
+  var token = jwt.sign(user._id.toHexString(),'secretToken')
+  user.token = token
+  user.save(function(err, user) {
+    if(err) return callback(err)
+    callback(null, user)
+  })
+
+}
 
 const User = mongoose.model('User', userSchema)
 
