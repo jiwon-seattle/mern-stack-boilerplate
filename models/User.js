@@ -73,6 +73,20 @@ userSchema.methods.generateToken = function(callback)  {
 
 }
 
+userSchema.methods.findByToken = function(token, callback) {
+  var user = this;
+
+  // decode tokens
+  jwt.verify(token, 'secretToken', function(err, decoded) {
+    // find the right user using decoded id
+    // compare the tokens from client-side to tokens in server-side
+    user.findOne({"_id" : decoded, "token" : token}, function(err, user) {
+      if (err) return callback(err)
+      callback(null, user)
+    })
+  } )
+}
+
 const User = mongoose.model('User', userSchema)
 
 module.exports = {User} //export model User

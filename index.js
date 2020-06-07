@@ -4,7 +4,7 @@ const port = 5000
 const bodyparser = require('body-parser')
 const cookieparser = require('cookie-parser')
 const config = require('./config/key')
-
+const auth = require('./middleware/auth')
 const { User } = require('./models/user')
 
 //application/x-www-form-urlencoded
@@ -32,7 +32,7 @@ app.post ('/register', (req, res) => {
   })
 })
 
-app.post('/login', (req, res) => {
+app.post('api/users/login', (req, res) => {
   // find if there is the requested email in db
   User.findOne( { email: req.body.email}, (err, user) => {
       if(!user) {
@@ -56,8 +56,19 @@ app.post('/login', (req, res) => {
         }) 
       })
     })
-  
+})
 
-
+app.get('/api/users/auth', auth ,(req, res) => {
+   // if procedure has completed here, authentication is succeeded
+   res.status(200).json({
+     _id : req.user_id,
+     isAdmin: req.user.role === 0 ? false: true,
+     isAuth: true,
+    email: req.user.email,
+    name: req.user.name,
+    lastname: req.user.lastname,
+    role:req.user.role,
+    image: req.user.image
+   })
 })
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
